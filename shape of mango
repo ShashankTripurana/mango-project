@@ -1,0 +1,39 @@
+import yolov5
+import cv2
+import numpy as np
+from pathlib import Path
+
+# Load the YOLOv5 model
+model_path = Path(r'D:\projects by me\mango project\best4.pt')  # Adjusted path using pathlib
+model = yolov5.load(model_path)
+
+# Load an image
+image_path = r'C:/Users/saish/Downloads/Mango dataset/Mango dataset/ripe/F2 C NF.JPG'  # Adjusted image path
+img = cv2.imread(image_path)
+
+# Perform detection
+results = model(img)
+
+# Parse the results
+boxes = results.xyxy[0].cpu().numpy()  # Bounding boxes in xyxy format
+
+def calculate_area(x1, y1, x2, y2):
+    width = x2 - x1
+    height = y2 - y1
+    return width * height
+
+for box in boxes:
+    x1, y1, x2, y2, conf, cls = box
+    label = results.names[int(cls)]
+    confidence = float(conf)
+    area = calculate_area(x1, y1, x2, y2)
+    
+    # Draw bounding box and label on the image
+    color = (0, 255, 0)  # Green color for bounding box
+    cv2.rectangle(img, (int(x1), int(y1)), (int(x2), int(y2)), color, 2)
+    cv2.putText(img, f'{label} {confidence:.2f} Area: {int(area)}', (int(x1), int(y1) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
+
+# Display the image with bounding boxes and area
+cv2.imshow('Detected Objects', img)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
